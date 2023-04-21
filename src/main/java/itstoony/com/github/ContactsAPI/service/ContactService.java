@@ -6,6 +6,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class ContactService {
 
@@ -16,4 +18,9 @@ public class ContactService {
     public Page<Contact> find(String name, Pageable pageable) {
         return null;
     }
+
+    public Optional<Contact> findById(long id) {
+        return Optional.empty();
+    }
+
 }

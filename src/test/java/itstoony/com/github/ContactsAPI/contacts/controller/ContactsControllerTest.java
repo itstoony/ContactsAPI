@@ -2,8 +2,8 @@ package itstoony.com.github.ContactsAPI.contacts.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import itstoony.com.github.ContactsAPI.model.Contact;
 import itstoony.com.github.ContactsAPI.dto.RegisteringContactRecord;
+import itstoony.com.github.ContactsAPI.model.Contact;
 import itstoony.com.github.ContactsAPI.service.ContactService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,7 +15,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -25,9 +24,8 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -133,6 +131,50 @@ class ContactsControllerTest {
                 .andExpect(jsonPath("pageable.pageNumber").value(0));
     }
 
+    @Test
+    @DisplayName("Should find a contact by id")
+    void findByIdTest() throws Exception {
+        // scenery
+        long id = 1L;
+        Contact contact = createContact();
+        contact.setId(id);
+
+        BDDMockito.given(service.findById(id)).willReturn(Optional.of(contact));
+
+        // execution
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .get(CONTACTS_API.concat("/" + id))
+                .contentType(MediaType.APPLICATION_JSON);
+
+        // validation
+        mvc
+                .perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").value(id))
+                .andExpect(jsonPath("name").value(contact.getName()))
+                .andExpect(jsonPath("email").value(contact.getEmail()))
+                .andExpect(jsonPath("phone").value(contact.getPhone()))
+                .andExpect(jsonPath("cellPhone").value(contact.getCellPhone()))
+                .andExpect(jsonPath("address").value(contact.getAddress()))
+                .andExpect(jsonPath("dateOfBirth").value(contact.getDateOfBirth().toString()));
+    }
+
+    @Test
+    @DisplayName("Should return 404 when trying to find an invalid contact by id")
+    void findByInvalidIdTest() throws Exception {
+        // scenery
+        long id = 1L;
+
+        // execution
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .get(CONTACTS_API.concat("/" + id))
+                .contentType(MediaType.APPLICATION_JSON);
+
+        // validation
+        mvc
+                .perform(request)
+                .andExpect(status().isNotFound());
+    }
 
     Contact createContact() {
         return Contact.builder()

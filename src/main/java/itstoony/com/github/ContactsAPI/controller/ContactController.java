@@ -11,8 +11,10 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
@@ -44,5 +46,13 @@ public class ContactController {
         List<ContactDTO> listDTO = page.stream().map(contact -> modelMapper.map(contact, ContactDTO.class)).toList();
 
         return ResponseEntity.ok(new PageImpl<>(listDTO, pageable, page.getTotalElements()));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ContactDTO> findById(@PathVariable(name = "id") Long id) {
+        Contact foundContact = service.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found by id: " + id));
+        ContactDTO dto = modelMapper.map(foundContact, ContactDTO.class);
+
+        return ResponseEntity.ok(dto);
     }
 }
