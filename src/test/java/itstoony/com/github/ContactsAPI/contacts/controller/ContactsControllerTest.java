@@ -9,10 +9,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.BDDMockito;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -21,6 +25,9 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -97,7 +104,37 @@ class ContactsControllerTest {
                 .andExpect(jsonPath("errors", hasSize(5)));
     }
 
-    private static Contact createContact() {
+    @Test
+    @DisplayName("Should list all contacts")
+    void listAllTest() throws Exception {
+        // scenery
+        Contact contact = createContact();
+        contact.setId(1L);
+
+        BDDMockito.given( service.find(Mockito.any(String.class), Mockito.any(Pageable.class)) )
+                .willReturn(new PageImpl<>(Collections.singletonList(contact), Pageable.ofSize(100), 1) );
+
+        String queryString = String.format("?name=%s&page=0&size=10",
+                contact.getName());
+
+        // execution
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .get(CONTACTS_API.concat(queryString))
+                .accept(MediaType.APPLICATION_JSON);
+
+        // validation
+        mvc
+                .perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("content", hasSize(1)))
+                .andExpect(jsonPath("content.[0].name").value(contact.getName()))
+                .andExpect(jsonPath("totalElements").value(1))
+                .andExpect(jsonPath("pageable.pageSize").value(10))
+                .andExpect(jsonPath("pageable.pageNumber").value(0));
+    }
+
+
+    Contact createContact() {
         return Contact.builder()
                 .name("John Doe")
                 .email("johndoe@example.com")
@@ -108,7 +145,7 @@ class ContactsControllerTest {
                 .build();
     }
 
-    private static RegisteringContactRecord createRegisteringContactDTO() {
+    RegisteringContactRecord createRegisteringContactDTO() {
         return new RegisteringContactRecord(
                 "John Doe",
                 "johndoe@example.com",

@@ -5,16 +5,18 @@ import itstoony.com.github.ContactsAPI.dto.RegisteringContactRecord;
 import itstoony.com.github.ContactsAPI.model.Contact;
 import itstoony.com.github.ContactsAPI.service.ContactService;
 import jakarta.validation.Valid;
+import jakarta.websocket.server.PathParam;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 
 @RequestMapping("/contact")
 @RestController
@@ -34,5 +36,13 @@ public class ContactController {
                 .buildAndExpand(savedDTO.getId()).toUri();
 
         return ResponseEntity.created(uri).body(savedDTO);
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<ContactDTO>> listAll(@PathParam("name") String name, Pageable pageable) {
+        Page<Contact> page = service.find(name, pageable);
+        List<ContactDTO> listDTO = page.stream().map(contact -> modelMapper.map(contact, ContactDTO.class)).toList();
+
+        return ResponseEntity.ok(new PageImpl<>(listDTO, pageable, page.getTotalElements()));
     }
 }
