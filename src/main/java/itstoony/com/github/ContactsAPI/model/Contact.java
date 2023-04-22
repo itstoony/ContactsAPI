@@ -1,6 +1,7 @@
 package itstoony.com.github.ContactsAPI.model;
 
 import jakarta.annotation.Nullable;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -11,8 +12,13 @@ import java.time.LocalDate;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Entity
+@Table(name = "contact")
 public class Contact {
 
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotBlank(message = "Name is required")
@@ -24,11 +30,13 @@ public class Contact {
     @Nullable
     @Pattern(regexp = "^\\(?(\\d{2})\\)?\\s(\\d{4,5})\\-(\\d{4})$",
             message = "Invalid phone number format")
+    @Column(name = "phone")
     private String phone;
 
     @Nullable
     @Pattern(regexp = "^\\(?(\\d{2})\\)?\\s9?(\\d{4})\\-(\\d{4})$",
             message = "Invalid cellphone number format")
+    @Column(name = "cellphone")
     private String cellPhone;
 
     @NotBlank(message = "Address is required")
