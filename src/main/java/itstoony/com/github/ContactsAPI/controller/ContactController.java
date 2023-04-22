@@ -8,6 +8,8 @@ import itstoony.com.github.ContactsAPI.service.ContactService;
 import jakarta.validation.Valid;
 import jakarta.websocket.server.PathParam;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -24,6 +26,7 @@ import java.util.List;
 @RequestMapping("/contact")
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 public class ContactController {
 
     private final ContactService service;
@@ -32,6 +35,8 @@ public class ContactController {
 
     @PostMapping
     public ResponseEntity<ContactDTO> save(@RequestBody @Valid RegisteringContactRecord dto) {
+        log.info("Saving contact with Email: {}", dto.email());
+
         Contact savedContact = service.save(dto);
         ContactDTO savedDTO = modelMapper.map(savedContact, ContactDTO.class);
 
@@ -43,6 +48,8 @@ public class ContactController {
 
     @GetMapping
     public ResponseEntity<Page<ContactDTO>> listAll(@PathParam("name") String name, Pageable pageable) {
+        log.info("Listing all contacts");
+
         Page<Contact> page = service.find(name, pageable);
         List<ContactDTO> listDTO = page.stream().map(contact -> modelMapper.map(contact, ContactDTO.class)).toList();
 
@@ -51,6 +58,8 @@ public class ContactController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ContactDTO> findById(@PathVariable(name = "id") Long id) {
+        log.info("Finding contact with id: {}", id);
+
         Contact foundContact = service.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found by id: " + id));
         ContactDTO dto = modelMapper.map(foundContact, ContactDTO.class);
 
@@ -60,6 +69,8 @@ public class ContactController {
     @PutMapping("/{id}")
     public ResponseEntity<ContactDTO> update(@PathVariable(name = "id") Long id,
                                              @RequestBody UpdatingContactRecord update) {
+        log.info("Updating contact with id: {}", id);
+
         Contact updatingContact = service.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Updating contact not found"));
 
@@ -72,6 +83,8 @@ public class ContactController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable(name = "id") Long id) {
+        log.info("deleting contact with id: {}", id);
+
         Contact contact = service.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found by id: " + id));
         service.delete(contact);
 
