@@ -64,4 +64,8 @@ public class ContactService {
         return repository.save(updatingContact);
     }
 
+    public void delete(Contact contact) {
+        repository.delete(contact);
+    }
+
 }

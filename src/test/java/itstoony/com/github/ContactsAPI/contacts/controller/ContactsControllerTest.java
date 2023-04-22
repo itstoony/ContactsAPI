@@ -257,5 +257,44 @@ class ContactsControllerTest {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    @DisplayName("Should delete a contact")
+    void deleteTest() throws Exception {
+        // scenery
+        long id = 1L;
+        Contact contact = createContact();
+        contact.setId(id);
+
+        BDDMockito.given(service.findById(id)).willReturn(Optional.of(contact));
+
+        // execution
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .delete(CONTACTS_API.concat("/" + id));
+
+        // validation
+        mvc
+                .perform(request)
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @DisplayName("Should return 404 not found when trying to delete an unsaved contact")
+    void deleteUnsavedContactTest() throws Exception {
+        // scenery
+        long id = 1L;
+        Contact contact = createContact();
+        contact.setId(id);
+
+        BDDMockito.given(service.findById(id)).willReturn(Optional.empty());
+
+        // execution
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .delete(CONTACTS_API.concat("/" + id));
+
+        // validation
+        mvc
+                .perform(request)
+                .andExpect(status().isNotFound());
+    }
 
 }
