@@ -1,5 +1,6 @@
 package itstoony.com.github.ContactsAPI.contacts.service;
 
+import itstoony.com.github.ContactsAPI.dto.UpdatingContactRecord;
 import itstoony.com.github.ContactsAPI.repository.ContactRepository;
 import itstoony.com.github.ContactsAPI.dto.RegisteringContactRecord;
 import itstoony.com.github.ContactsAPI.exception.BusinessException;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.BDDMockito;
 import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
@@ -22,11 +24,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static itstoony.com.github.ContactsAPI.contacts.utils.Utils.createContact;
-import static itstoony.com.github.ContactsAPI.contacts.utils.Utils.createRegisteringContactDTO;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchException;
-import static org.mockito.Mockito.when;
+import static itstoony.com.github.ContactsAPI.contacts.utils.Utils.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
@@ -146,6 +146,56 @@ class ContactServiceTest {
         assertThat(result.getContent()).isEqualTo(list);
         assertThat(result.getPageable().getPageNumber()).isZero();
         assertThat(result.getPageable().getPageSize()).isEqualTo(10);
+
+    }
+
+    @Test
+    @DisplayName("Should update a contact")
+    void updateTest() {
+        // scenery
+        long id = 1L;
+        Contact updatingContact = createContact();
+        updatingContact.setId(id);
+
+        UpdatingContactRecord update = createUpdatingContactDTO();
+
+        BDDMockito.when(repository.existsByEmail(updatingContact.getEmail())).thenReturn(true);
+        BDDMockito.when(repository.save(updatingContact)).thenReturn(updatingContact);
+
+        // execution
+        Contact updatedContact = service.update(updatingContact, update);
+
+        // validation
+        assertThat(updatedContact.getId()).isEqualTo(id);
+        assertThat(updatedContact.getName()).isEqualTo(update.name());
+        assertThat(updatedContact.getEmail()).isEqualTo(update.email());
+        assertThat(updatedContact.getPhone()).isEqualTo(update.phone());
+        assertThat(updatedContact.getCellPhone()).isEqualTo(update.cellPhone());
+        assertThat(updatedContact.getAddress()).isEqualTo(update.address());
+        assertThat(updatedContact.getDateOfBirth()).isEqualTo(update.dateOfBirth());
+
+        verify(repository, times(1)).save(updatingContact);
+
+    }
+
+    @Test
+    @DisplayName("Should throw an exception when trying to update an unsaved contact")
+    void updateInvalidContactTest() {
+        // scenery
+        long id = 1L;
+        Contact updatingContact = createContact();
+        updatingContact.setId(id);
+        UpdatingContactRecord update = createUpdatingContactDTO();
+
+        // execution
+        Throwable exception = catchThrowable(() -> service.update(updatingContact, update));
+
+        // validation
+        assertThat(exception)
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Can't update an unsaved contact");
+
+        verify(repository, never()).save(updatingContact);
 
     }
 }

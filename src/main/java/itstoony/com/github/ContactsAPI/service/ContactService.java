@@ -1,5 +1,6 @@
 package itstoony.com.github.ContactsAPI.service;
 
+import itstoony.com.github.ContactsAPI.dto.UpdatingContactRecord;
 import itstoony.com.github.ContactsAPI.repository.ContactRepository;
 import itstoony.com.github.ContactsAPI.dto.RegisteringContactRecord;
 import itstoony.com.github.ContactsAPI.exception.BusinessException;
@@ -48,6 +49,19 @@ public class ContactService {
 
     public Optional<Contact> findById(long id) {
         return repository.findById(id);
+    }
+
+    public Contact update(Contact updatingContact, UpdatingContactRecord update) {
+        if (!existsByEmail(updatingContact.getEmail())) throw new BusinessException("Can't update an unsaved contact");
+
+        if (!update.name().isBlank()) updatingContact.setName(update.name());
+        if (!update.email().isBlank()) updatingContact.setEmail(update.email());
+        if (!update.phone().isBlank()) updatingContact.setPhone(update.phone());
+        if (!update.cellPhone().isBlank()) updatingContact.setCellPhone(update.cellPhone());
+        if (!update.address().isBlank()) updatingContact.setAddress(update.address());
+        if (update.dateOfBirth() != null) updatingContact.setDateOfBirth(update.dateOfBirth());
+
+        return repository.save(updatingContact);
     }
 
 }

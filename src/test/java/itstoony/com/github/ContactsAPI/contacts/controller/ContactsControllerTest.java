@@ -2,7 +2,9 @@ package itstoony.com.github.ContactsAPI.contacts.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import itstoony.com.github.ContactsAPI.contacts.utils.Utils;
 import itstoony.com.github.ContactsAPI.dto.RegisteringContactRecord;
+import itstoony.com.github.ContactsAPI.dto.UpdatingContactRecord;
 import itstoony.com.github.ContactsAPI.model.Contact;
 import itstoony.com.github.ContactsAPI.service.ContactService;
 import org.junit.jupiter.api.DisplayName;
@@ -176,5 +178,84 @@ class ContactsControllerTest {
                 .perform(request)
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    @DisplayName("Should update a contact")
+    void updateTest() throws Exception {
+        // scenery
+        long id = 1L;
+        Contact updatingContact = createContact();
+        updatingContact.setId(id);
+
+        UpdatingContactRecord update = Utils.createUpdatingContactDTO();
+
+        Contact updatedContact = Contact.builder()
+                .id(id)
+                .name(update.name())
+                .email(update.email())
+                .phone(update.phone())
+                .cellPhone(update.cellPhone())
+                .address(update.address())
+                .dateOfBirth(update.dateOfBirth())
+                .build();
+
+        BDDMockito.given(service.findById(id)).willReturn(Optional.of(updatingContact));
+        BDDMockito.given(service.update(Mockito.any(Contact.class), Mockito.any(UpdatingContactRecord.class)))
+                .willReturn(updatedContact);
+
+        String json = new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .writeValueAsString(update);
+
+        // execution
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .put(CONTACTS_API.concat("/" + id))
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json);
+
+        // validation
+        mvc
+                .perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").value(id))
+                .andExpect(jsonPath("name").value(update.name()))
+                .andExpect(jsonPath("email").value(update.email()))
+                .andExpect(jsonPath("phone").value(update.phone()))
+                .andExpect(jsonPath("cellPhone").value(update.cellPhone()))
+                .andExpect(jsonPath("address").value(update.address()))
+                .andExpect(jsonPath("dateOfBirth").value(update.dateOfBirth().toString()));
+
+    }
+
+    @Test
+    @DisplayName("Should return 404 not found when trying to update an invalid contact")
+    void updateInvalidContactTest() throws Exception {
+        // scenery
+        long id = 1L;
+        Contact updatingContact = createContact();
+        updatingContact.setId(id);
+
+        UpdatingContactRecord update = Utils.createUpdatingContactDTO();
+
+        BDDMockito.given(service.findById(id)).willReturn(Optional.empty());
+
+        String json = new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .writeValueAsString(update);
+
+        // execution
+        MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+                .put(CONTACTS_API.concat("/" + id))
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json);
+
+        // validation
+        mvc
+                .perform(request)
+                .andExpect(status().isNotFound());
+    }
+
 
 }
