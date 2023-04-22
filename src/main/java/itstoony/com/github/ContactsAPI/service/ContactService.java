@@ -1,6 +1,6 @@
 package itstoony.com.github.ContactsAPI.service;
 
-import itstoony.com.github.ContactsAPI.contacts.repository.ContactRepository;
+import itstoony.com.github.ContactsAPI.repository.ContactRepository;
 import itstoony.com.github.ContactsAPI.dto.RegisteringContactRecord;
 import itstoony.com.github.ContactsAPI.exception.BusinessException;
 import itstoony.com.github.ContactsAPI.model.Contact;
@@ -43,7 +43,7 @@ public class ContactService {
     }
 
     public Page<Contact> find(String name, Pageable pageable) {
-        return null;
+        return repository.findByName(name, pageable);
     }
 
     public Optional<Contact> findById(long id) {

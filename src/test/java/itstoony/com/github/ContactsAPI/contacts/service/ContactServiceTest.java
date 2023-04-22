@@ -1,6 +1,6 @@
 package itstoony.com.github.ContactsAPI.contacts.service;
 
-import itstoony.com.github.ContactsAPI.contacts.repository.ContactRepository;
+import itstoony.com.github.ContactsAPI.repository.ContactRepository;
 import itstoony.com.github.ContactsAPI.dto.RegisteringContactRecord;
 import itstoony.com.github.ContactsAPI.exception.BusinessException;
 import itstoony.com.github.ContactsAPI.model.Contact;
@@ -9,18 +9,24 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.BDDMockito;
 import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static itstoony.com.github.ContactsAPI.contacts.utils.Utils.createContact;
 import static itstoony.com.github.ContactsAPI.contacts.utils.Utils.createRegisteringContactDTO;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchException;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
@@ -43,8 +49,8 @@ class ContactServiceTest {
         RegisteringContactRecord dto = createRegisteringContactDTO();
         Contact contact = createContact();
 
-        BDDMockito.when(repository.save(Mockito.any(Contact.class))).thenReturn(contact);
-        BDDMockito.when(repository.existsByEmail(Mockito.anyString())).thenReturn(false);
+        when(repository.save(Mockito.any(Contact.class))).thenReturn(contact);
+        when(repository.existsByEmail(Mockito.anyString())).thenReturn(false);
         // execution
         Contact savedContact = service.save(dto);
 
@@ -64,7 +70,7 @@ class ContactServiceTest {
         // scenery
         RegisteringContactRecord dto = createRegisteringContactDTO();
 
-        BDDMockito.when(repository.existsByEmail(Mockito.anyString())).thenReturn(true);
+        when(repository.existsByEmail(Mockito.anyString())).thenReturn(true);
         // execution
         Exception exception = catchException(() -> service.save(dto));
 
@@ -82,7 +88,7 @@ class ContactServiceTest {
         Contact contact = createContact();
         contact.setId(id);
 
-        BDDMockito.when(repository.findById(id)).thenReturn(Optional.of(contact));
+        when(repository.findById(id)).thenReturn(Optional.of(contact));
 
         // execution
         Optional<Contact> foundContact = service.findById(id);
@@ -106,12 +112,40 @@ class ContactServiceTest {
         Contact contact = createContact();
         contact.setId(id);
 
-        BDDMockito.when(repository.findById(id)).thenReturn(Optional.empty());
+        when(repository.findById(id)).thenReturn(Optional.empty());
 
         // execution
         Optional<Contact> foundContact = service.findById(id);
 
         // validation
         assertThat(foundContact).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Should find contacts filtering by name ")
+    void findTest() {
+        // scenery
+        String name = createContact().getName();
+        Contact contact = createContact();
+        contact.setId(1L);
+
+
+        PageRequest pageRequest = PageRequest.of(0, 10);
+        List<Contact> list = Collections.singletonList(contact);
+
+        PageImpl<Contact> page = new PageImpl<>(list, pageRequest, 1);
+
+        when(repository.findByName(Mockito.anyString(), Mockito.any(Pageable.class)))
+                .thenReturn(page);
+
+        // execution
+        Page<Contact> result = service.find(name, pageRequest);
+
+        // validation
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getContent()).isEqualTo(list);
+        assertThat(result.getPageable().getPageNumber()).isZero();
+        assertThat(result.getPageable().getPageSize()).isEqualTo(10);
+
     }
 }
