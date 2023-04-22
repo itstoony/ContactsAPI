@@ -23,10 +23,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Optional;
 
+import static itstoony.com.github.ContactsAPI.contacts.utils.Utils.createContact;
+import static itstoony.com.github.ContactsAPI.contacts.utils.Utils.createRegisteringContactDTO;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -174,29 +175,6 @@ class ContactsControllerTest {
         mvc
                 .perform(request)
                 .andExpect(status().isNotFound());
-    }
-
-    Contact createContact() {
-        return Contact.builder()
-                .name("John Doe")
-                .email("johndoe@example.com")
-                .phone("21 1234-5678")
-                .cellPhone("(11) 91234-5678")
-                .address("123 Main St")
-                .dateOfBirth(LocalDate.of(1990, 5, 15))
-                .build();
-    }
-
-    RegisteringContactRecord createRegisteringContactDTO() {
-        return new RegisteringContactRecord(
-                "John Doe",
-                "johndoe@example.com",
-                "21 1234-5678",
-                "(11) 91234-5678",
-                "123 Main St",
-                LocalDate.of(1990, 5, 15)
-        );
-
     }
 
 }
