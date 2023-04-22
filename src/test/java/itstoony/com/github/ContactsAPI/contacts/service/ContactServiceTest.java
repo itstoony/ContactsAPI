@@ -15,6 +15,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.util.Optional;
+
 import static itstoony.com.github.ContactsAPI.contacts.utils.Utils.createContact;
 import static itstoony.com.github.ContactsAPI.contacts.utils.Utils.createRegisteringContactDTO;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -72,4 +74,44 @@ class ContactServiceTest {
                 .hasMessage("Email already saved");
     }
 
+    @Test
+    @DisplayName("Should find contact by id")
+    void findByIdTest() {
+        // scenery
+        long id = 1L;
+        Contact contact = createContact();
+        contact.setId(id);
+
+        BDDMockito.when(repository.findById(id)).thenReturn(Optional.of(contact));
+
+        // execution
+        Optional<Contact> foundContact = service.findById(id);
+
+        // validation
+        assertThat(foundContact).isPresent();
+        assertThat(foundContact.get().getName()).isEqualTo(contact.getName());
+        assertThat(foundContact.get().getEmail()).isEqualTo(contact.getEmail());
+        assertThat(foundContact.get().getPhone()).isEqualTo(contact.getPhone());
+        assertThat(foundContact.get().getCellPhone()).isEqualTo(contact.getCellPhone());
+        assertThat(foundContact.get().getAddress()).isEqualTo(contact.getAddress());
+        assertThat(foundContact.get().getDateOfBirth()).isEqualTo(contact.getDateOfBirth());
+        
+    }
+    
+    @Test
+    @DisplayName("Should throw an exception when trying to find inexistent contact by id")
+    void findByInvalidIdTest() {
+        // scenery
+        long id = 1L;
+        Contact contact = createContact();
+        contact.setId(id);
+
+        BDDMockito.when(repository.findById(id)).thenReturn(Optional.empty());
+
+        // execution
+        Optional<Contact> foundContact = service.findById(id);
+
+        // validation
+        assertThat(foundContact).isEmpty();
+    }
 }

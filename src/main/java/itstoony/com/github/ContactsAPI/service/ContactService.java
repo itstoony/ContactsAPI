@@ -47,7 +47,7 @@ public class ContactService {
     }
 
     public Optional<Contact> findById(long id) {
-        return Optional.empty();
+        return repository.findById(id);
     }
 
 }
