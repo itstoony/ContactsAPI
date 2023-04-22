@@ -2,6 +2,7 @@ package itstoony.com.github.ContactsAPI.controller;
 
 import itstoony.com.github.ContactsAPI.dto.ContactDTO;
 import itstoony.com.github.ContactsAPI.dto.RegisteringContactRecord;
+import itstoony.com.github.ContactsAPI.dto.UpdatingContactRecord;
 import itstoony.com.github.ContactsAPI.model.Contact;
 import itstoony.com.github.ContactsAPI.service.ContactService;
 import jakarta.validation.Valid;
@@ -52,6 +53,19 @@ public class ContactController {
     public ResponseEntity<ContactDTO> findById(@PathVariable(name = "id") Long id) {
         Contact foundContact = service.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found by id: " + id));
         ContactDTO dto = modelMapper.map(foundContact, ContactDTO.class);
+
+        return ResponseEntity.ok(dto);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ContactDTO> update(@PathVariable(name = "id") Long id,
+                                             @RequestBody UpdatingContactRecord update) {
+        Contact updatingContact = service.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Updating contact not found"));
+
+        Contact updatedContact = service.update(updatingContact, update);
+
+        ContactDTO dto = modelMapper.map(updatedContact, ContactDTO.class);
 
         return ResponseEntity.ok(dto);
     }
