@@ -69,4 +69,12 @@ public class ContactController {
 
         return ResponseEntity.ok(dto);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable(name = "id") Long id) {
+        Contact contact = service.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found by id: " + id));
+        service.delete(contact);
+
+        return ResponseEntity.noContent().build();
+    }
 }
