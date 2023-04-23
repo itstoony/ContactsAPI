@@ -3,27 +3,33 @@ package itstoony.com.github.ContactsAPI.contacts.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import itstoony.com.github.ContactsAPI.contacts.utils.Utils;
+import itstoony.com.github.ContactsAPI.controller.ContactController;
 import itstoony.com.github.ContactsAPI.dto.RegisteringContactRecord;
 import itstoony.com.github.ContactsAPI.dto.UpdatingContactRecord;
 import itstoony.com.github.ContactsAPI.model.Contact;
+import itstoony.com.github.ContactsAPI.repository.UserRepository;
+import itstoony.com.github.ContactsAPI.security.jwt.TokenService;
 import itstoony.com.github.ContactsAPI.service.ContactService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.BDDMockito;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -34,22 +40,38 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@AutoConfigureMockMvc
+
 @ExtendWith(SpringExtension.class)
-@WebMvcTest
+@WebMvcTest(controllers = ContactController.class)
 @ActiveProfiles("test")
 class ContactsControllerTest {
 
     static String CONTACTS_API = "/contact";
 
     @Autowired
+    WebApplicationContext webApplicationContext;
+
     MockMvc mvc;
 
     @MockBean
     ContactService service;
 
+    @MockBean
+    TokenService tokenService;
+
+    @MockBean
+    UserRepository repository;
+
+    @BeforeEach
+    void setUp() {
+        mvc = MockMvcBuilders
+                .webAppContextSetup(webApplicationContext)
+                .build();
+    }
+
     @Test
     @DisplayName("Should save a contact")
+    @WithMockUser
     void saveTest() throws Exception {
         // scenery
         RegisteringContactRecord dto = createRegisteringContactDTO();
@@ -85,6 +107,7 @@ class ContactsControllerTest {
 
     @Test
     @DisplayName("Should not save invalid Contact")
+    @WithMockUser
     void saveInvalidContactTest() throws Exception {
         // test
         RegisteringContactRecord dto = new RegisteringContactRecord("", "", "", "", "", null);
@@ -107,6 +130,7 @@ class ContactsControllerTest {
 
     @Test
     @DisplayName("Should list all contacts")
+    @WithMockUser
     void listAllTest() throws Exception {
         // scenery
         Contact contact = createContact();
@@ -136,6 +160,7 @@ class ContactsControllerTest {
 
     @Test
     @DisplayName("Should find a contact by id")
+    @WithMockUser
     void findByIdTest() throws Exception {
         // scenery
         long id = 1L;
@@ -164,6 +189,7 @@ class ContactsControllerTest {
 
     @Test
     @DisplayName("Should return 404 when trying to find an invalid contact by id")
+    @WithMockUser
     void findByInvalidIdTest() throws Exception {
         // scenery
         long id = 1L;
@@ -181,6 +207,7 @@ class ContactsControllerTest {
 
     @Test
     @DisplayName("Should update a contact")
+    @WithMockUser
     void updateTest() throws Exception {
         // scenery
         long id = 1L;
@@ -230,6 +257,7 @@ class ContactsControllerTest {
 
     @Test
     @DisplayName("Should return 404 not found when trying to update an invalid contact")
+    @WithMockUser
     void updateInvalidContactTest() throws Exception {
         // scenery
         long id = 1L;
@@ -259,6 +287,7 @@ class ContactsControllerTest {
 
     @Test
     @DisplayName("Should delete a contact")
+    @WithMockUser
     void deleteTest() throws Exception {
         // scenery
         long id = 1L;
@@ -279,6 +308,7 @@ class ContactsControllerTest {
 
     @Test
     @DisplayName("Should return 404 not found when trying to delete an unsaved contact")
+    @WithMockUser
     void deleteUnsavedContactTest() throws Exception {
         // scenery
         long id = 1L;

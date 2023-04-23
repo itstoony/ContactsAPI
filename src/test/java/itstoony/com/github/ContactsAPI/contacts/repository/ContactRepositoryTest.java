@@ -1,6 +1,7 @@
-package itstoony.com.github.ContactsAPI.repository;
+package itstoony.com.github.ContactsAPI.contacts.repository;
 
 import itstoony.com.github.ContactsAPI.model.Contact;
+import itstoony.com.github.ContactsAPI.repository.ContactRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
