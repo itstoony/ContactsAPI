@@ -8,6 +8,7 @@ import itstoony.com.github.ContactsAPI.security.jwt.TokenService;
 import itstoony.com.github.ContactsAPI.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,6 +25,7 @@ import java.net.URI;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
+@Slf4j
 public class AuthenticationController {
 
     private final AuthenticationManager manager;
@@ -34,6 +36,8 @@ public class AuthenticationController {
 
     @PostMapping("/login")
     public ResponseEntity<DataTokenJWT> login(@RequestBody @Valid AuthenticationData data) {
+        log.info("Login with user: {}", data.login());
+
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(data.login(), data.password());
         Authentication authentication = manager.authenticate(authenticationToken);
 
@@ -44,7 +48,7 @@ public class AuthenticationController {
 
     @PostMapping("/register")
     public ResponseEntity<Void> register(@RequestBody @Valid UserDTO dto) {
-
+        log.info("Registering user: {}", dto.getLogin());
         User user = modelMapper.map(dto, User.class);
 
         User savedUser = userService.register(user);
