@@ -22,12 +22,13 @@ Should be consumed by front-end application made in Angular.
 * [**`Mockito `**](https://site.mockito.org/)
 * [**`JWT `**](https://jwt.io/)
 * [**`Lombok `**](https://projectlombok.org/)
+* [**`Flyway `**](https://flywaydb.org/)
 
 <hr>
 
 ### Setup
 
-Fork `master` branch into your personal repository. Clone it to local computer. Install maven dependencies. Before starting development, you should check if there are any errors.
+Fork `master` branch into your personal repository. Clone it to local computer. Install maven dependencies. Before starting development, you should set the application.properties to 'dev' in order to use H2 Database or set the environment variables "DATASOURCE", "USERNAME", "PASSWORD" for production Database.
 
 ```sh
 $ git clone https://github.com/itstoony/ContactsAPI.git
