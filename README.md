@@ -2,7 +2,6 @@
 ## 💻 Why did i develop this API? 💻
 
 API made to manage contacts. <br>
-Should be consumed by front-end application made in Angular.
 
 <hr>
 
